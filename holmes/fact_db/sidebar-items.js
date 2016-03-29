@@ -1,0 +1,1 @@
+initSidebarItems({"trait":[["FactDB","This is the interface which a fact database must satisfy to be used by the Holmes engine."]],"type":[["Result","This is a universal result type, allowing any `Error`"]]});

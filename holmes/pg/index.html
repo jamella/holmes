@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `pg` mod in crate `holmes`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, pg">
+
+    <title>holmes::pg - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../index.html'>holmes</a></p><script>window.sidebarCurrent = {name: 'pg', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Module <a href='../index.html'>holmes</a>::<wbr><a class='mod' href=''>pg</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-7' class='srclink' href='../../src/holmes/pg/mod.rs.html#1-393' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Postgres-based Fact Database</p>
+
+<h1 id='design-notes' class='section-header'><a href='#design-notes'>Design Notes</a></h1>
+<h2 id='scope' class='section-header'><a href='#scope'>Scope</a></h2>
+<p>The general philsophy is that things having to do with persistence go here,
+while things related to non-persistent components go in <code>holmes::engine</code>.</p>
+
+<p>In the long run, we would like to persist nearly everything in the
+database, so that a client-server model can one bay restored. However,
+in the short term this has little benefit, so only the items needing to
+use SQL for efficient execution are being included.</p>
+
+<p>The biggest hurdle here is the persistence of code:</p>
+
+<ul>
+<li>How do we store Types?</li>
+<li>How do we store bound functions?</li>
+</ul>
+
+<p>One possible long term answer is Cap&#39;n&#39; Proto <code>SturdyRef</code>s</p>
+
+<h2 id='other-databases' class='section-header'><a href='#other-databases'>Other Databases</a></h2>
+<p>For the moment, this is the only implementation, and there are no others
+on the horizon, so this interface is not abstract.</p>
+
+<p>The only major hurdle to using another backend would be figuring out how
+to make the <code>dyn</code> module abstract over databases.</p>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='dyn/index.html'
+                               title='holmes::pg::dyn'>dyn</a></td>
+                        <td class='docblock short'>
+                             <p>This module provides extensible, dynamically typed persistable values for
+use in the Holmes language and postgres db.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.PgDB.html'
+                               title='holmes::pg::PgDB'>PgDB</a></td>
+                        <td class='docblock short'>
+                             <p>Object representing a postgres-backed fact database instance</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.RowIter.html'
+                               title='holmes::pg::RowIter'>RowIter</a></td>
+                        <td class='docblock short'>
+                             <p>An iterator over a <code>postgres::rows::Row</code>.
+It does not implement the normal iter interface because it does not have
+a set item type, but it implements a similar interface for ease of use.</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.Error.html'
+                               title='holmes::pg::Error'>Error</a></td>
+                        <td class='docblock short'>
+                             <p>The <code>Error</code> type for representing things going wrong in the database
+layer.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "holmes";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script defer src="../../search-index.js"></script>
+</body>
+</html>

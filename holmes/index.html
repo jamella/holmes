@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `holmes` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, holmes">
+
+    <title>holmes - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'></p><script>window.sidebarCurrent = {name: 'holmes', ty: 'mod', relpath: '../'};</script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content mod">
+<h1 class='fqn'><span class='in-band'>Crate <a class='mod' href=''>holmes</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-0' class='srclink' href='../src/holmes/lib.rs.html#1-776' title='goto source code'>[src]</a></span></h1>
+<div class='docblock'><p>Holmes</p>
+
+<p>Holmes is a Datalog inspired system for binding codependent analyses
+together.</p>
+
+<h1 id='tutorial' class='section-header'><a href='#tutorial'>Tutorial</a></h1>
+<h2 id='basic-datalog' class='section-header'><a href='#basic-datalog'>Basic Datalog</a></h2>
+<p>If you are already familiar with logic languages, this section will likely
+be straightforwards for you, but it may still be useful to provide an
+overview of basic functions and syntax.</p>
+
+<p>Datalog is a forward-chaining logic language. This means that a program
+written in Datalog consists of a set of rules which &quot;fire&quot; whenever their
+requirements are met which operate on a database of facts.</p>
+
+<h3 id='predicates' class='section-header'><a href='#predicates'>Predicates</a></h3>
+<p>A predicate represents a property on a list of typed values. For example,
+to express the distance between two cities in miles, we might write</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>))</pre>
+
+<p>N.B. while this code is being built via doctests, there are a few lines of
+support code above and below being hidden for clarity. See the complete
+example at the end of the section for a template.</p>
+
+<h3 id='facts' class='section-header'><a href='#facts'>Facts</a></h3>
+<p>Facts are formed by the application of predicates to values. Continuing
+with the example from before, we can add a fact to the database for the
+predicate we defined</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>));
+<span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Albuquerque&quot;</span>, <span class='number'>1810</span>))</pre>
+
+<h3 id='rules' class='section-header'><a href='#rules'>Rules</a></h3>
+<p>Rules are formed from a body clause and a head clause.
+When the rule body matches, variable assignments from the match are
+substituted into the head clause, which is then added to the database.
+Here, we might want to add the symmetry property to our previous example,
+e.g. &quot;If the distance from A to B is N, then the distance from B to A is
+also N&quot;.</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>));
+<span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Albuquerque&quot;</span>, <span class='number'>1810</span>));
+<span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>B</span>, <span class='ident'>A</span>, <span class='ident'>N</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N</span>))</pre>
+
+<p>In a rule or a query (in the next section), the possible restrictions on
+each slot are:</p>
+
+<ul>
+<li>Unbound: <code>[_]</code></li>
+<li>Constant Equality: <code>(value)</code></li>
+<li>Variable unification <code>var</code></li>
+</ul>
+
+<h3 id='queries' class='section-header'><a href='#queries'>Queries</a></h3>
+<p>Now that the database has more facts in it than we started with, it makes
+sense to be able to query the database and see what is inside.</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>holmes_exec</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, {
+  <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Albuquerque&quot;</span>, <span class='number'>1810</span>));
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>B</span>, <span class='ident'>A</span>, <span class='ident'>N</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N</span>))
+});
+
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>query</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, <span class='ident'>distance</span>(<span class='ident'>A</span>, [_], [_])));
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>res</span>,
+           <span class='macro'>vec</span><span class='macro'>!</span>[<span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Albuquerque&quot;</span>.<span class='ident'>to_value</span>()],
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;New York&quot;</span>.<span class='ident'>to_value</span>()]]);</pre>
+
+<h3 id='recursive-rules' class='section-header'><a href='#recursive-rules'>Recursive Rules</a></h3>
+<p>Let&#39;s go one step further, and use a rule to check connectivity between
+cities, based on the facts in the database. We want to express &quot;If A
+connects to B, and B connects to C, then A connects to C&quot;.</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>holmes_exec</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, {
+  <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Albuquerque&quot;</span>, <span class='number'>1810</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Las Vegas&quot;</span>, <span class='number'>2225</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;Las Vegas&quot;</span>, <span class='string'>&quot;Palo Alto&quot;</span>, <span class='number'>542</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;Rome&quot;</span>, <span class='string'>&quot;Florence&quot;</span>, <span class='number'>173</span>));
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>B</span>, <span class='ident'>A</span>, <span class='ident'>N</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N</span>));
+  <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>connected</span>(<span class='ident'>string</span>, <span class='ident'>string</span>));
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>connected</span>(<span class='ident'>A</span>, <span class='ident'>B</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, [_]));
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>connected</span>(<span class='ident'>A</span>, <span class='ident'>C</span>) <span class='op'>&lt;=</span> <span class='ident'>connected</span>(<span class='ident'>A</span>, <span class='ident'>B</span>) <span class='kw-2'>&amp;</span> <span class='ident'>connected</span>(<span class='ident'>B</span>, <span class='ident'>C</span>))
+});
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>query</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, <span class='ident'>connected</span>((<span class='string'>&quot;Rome&quot;</span>), (<span class='string'>&quot;Las Vegas&quot;</span>)))).<span class='ident'>len</span>(),
+           <span class='number'>0</span>);
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>query</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, <span class='ident'>connected</span>((<span class='string'>&quot;Palo Alto&quot;</span>), <span class='ident'>x</span>)));
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>res</span>,
+           <span class='macro'>vec</span><span class='macro'>!</span>[<span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Albuquerque&quot;</span>.<span class='ident'>to_value</span>()],
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Las Vegas&quot;</span>.<span class='ident'>to_value</span>()],
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;New York&quot;</span>.<span class='ident'>to_value</span>()],
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Palo Alto&quot;</span>.<span class='ident'>to_value</span>()]]);</pre>
+
+<h3 id='complete-example' class='section-header'><a href='#complete-example'>Complete Example</a></h3>
+<p>Finally, just for reference (so you can actually write your own program
+using this) here&#39;s the unredacted version of that last example:</p>
+<pre class='rust rust-example-rendered'>
+<span class='attribute'>#[<span class='ident'>macro_use</span>]</span>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>holmes</span>;
+<span class='kw'>use</span> <span class='ident'>holmes</span>::{<span class='ident'>Holmes</span>, <span class='prelude-ty'>Result</span>};
+<span class='kw'>use</span> <span class='ident'>holmes</span>::<span class='ident'>DB</span>::<span class='ident'>Memory</span>;
+<span class='kw'>use</span> <span class='ident'>holmes</span>::<span class='ident'>pg</span>::<span class='ident'>dyn</span>::<span class='ident'>values</span>::<span class='ident'>ToValue</span>;
+<span class='kw'>fn</span> <span class='ident'>f</span> () <span class='op'>-&gt;</span> <span class='prelude-ty'>Result</span><span class='op'>&lt;</span>()<span class='op'>&gt;</span> {
+  <span class='comment'>// I&#39;m using `Memory` in the examples, but you probably don&#39;t want to use</span>
+  <span class='comment'>// it in your own code. Check out `Holmes::DB`&#39;s wings to see what your</span>
+  <span class='comment'>// options are. `Memory` is super slow for the moment, and I don&#39;t forsee</span>
+  <span class='comment'>// taking time to optimize it.</span>
+  <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>holmes_own</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='ident'>Holmes</span>::<span class='ident'>new</span>(<span class='ident'>Memory</span>));
+  <span class='comment'>// For the moment, the `holmes_exec` macro needs a &amp;mut ident. I&#39;ll</span>
+  <span class='comment'>// try to make this more flexible in the future.</span>
+  <span class='kw'>let</span> <span class='ident'>holmes</span> <span class='op'>=</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='ident'>holmes_own</span>;
+  <span class='macro'>holmes_exec</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, {
+    <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>));
+    <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Albuquerque&quot;</span>, <span class='number'>1810</span>));
+    <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Las Vegas&quot;</span>, <span class='number'>2225</span>));
+    <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;Las Vegas&quot;</span>, <span class='string'>&quot;Palo Alto&quot;</span>, <span class='number'>542</span>));
+    <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;Rome&quot;</span>, <span class='string'>&quot;Florence&quot;</span>, <span class='number'>173</span>));
+    <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>B</span>, <span class='ident'>A</span>, <span class='ident'>N</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N</span>));
+    <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>connected</span>(<span class='ident'>string</span>, <span class='ident'>string</span>));
+    <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>connected</span>(<span class='ident'>A</span>, <span class='ident'>B</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, [_]));
+    <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>connected</span>(<span class='ident'>A</span>, <span class='ident'>C</span>) <span class='op'>&lt;=</span> <span class='ident'>connected</span>(<span class='ident'>A</span>, <span class='ident'>B</span>) <span class='kw-2'>&amp;</span> <span class='ident'>connected</span>(<span class='ident'>B</span>, <span class='ident'>C</span>))
+  });
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>query</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, <span class='ident'>connected</span>((<span class='string'>&quot;Rome&quot;</span>), (<span class='string'>&quot;Las Vegas&quot;</span>)))).<span class='ident'>len</span>(),
+             <span class='number'>0</span>);
+  <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>query</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, <span class='ident'>connected</span>((<span class='string'>&quot;Palo Alto&quot;</span>), <span class='ident'>x</span>)));
+  <span class='comment'>// Order is not gauranteed when it comes back from the query, so I</span>
+  <span class='comment'>// sort it in the example to get the doctest to pass. `Value` only has</span>
+  <span class='comment'>// `PartialOrd` implemented for it, since there isn&#39;t a clean comparison</span>
+  <span class='comment'>// between `Value`s of different types, so I just default to `Greater`.</span>
+  <span class='ident'>res</span>.<span class='ident'>sort_by</span>(<span class='op'>|</span><span class='ident'>x</span>, <span class='ident'>y</span><span class='op'>|</span> <span class='ident'>x</span>.<span class='ident'>partial_cmp</span>(<span class='ident'>y</span>).<span class='ident'>unwrap_or</span>(
+    ::<span class='ident'>std</span>::<span class='ident'>cmp</span>::<span class='ident'>Ordering</span>::<span class='ident'>Greater</span>));
+  <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>res</span>,
+             <span class='macro'>vec</span><span class='macro'>!</span>[<span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Albuquerque&quot;</span>.<span class='ident'>to_value</span>()],
+                  <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Las Vegas&quot;</span>.<span class='ident'>to_value</span>()],
+                  <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;New York&quot;</span>.<span class='ident'>to_value</span>()],
+                  <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Palo Alto&quot;</span>.<span class='ident'>to_value</span>()]]);
+  <span class='prelude-val'>Ok</span>(())
+}
+<span class='kw'>fn</span> <span class='ident'>main</span> () {<span class='ident'>f</span>().<span class='ident'>unwrap</span>()}</pre>
+
+<h2 id='extensions' class='section-header'><a href='#extensions'>Extensions</a></h2>
+<p>While Datalog itself is interesting, writing yet-another-datalog engine
+is not the goal of this project. Next, we&#39;ll go over some of the new
+features of this system.</p>
+
+<h3 id='functions' class='section-header'><a href='#functions'>Functions</a></h3>
+<p>Normally, logic languages expect the computation to be encoded as rules
+only (or in special cases, as external predicates). In order to allow
+the user to write things which make more sense as traditional code, we
+allow the binding of functions:</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>func</span><span class='macro'>!</span>(<span class='kw'>let</span> <span class='ident'>f</span> : <span class='ident'>uint64</span> <span class='op'>-&gt;</span> <span class='ident'>uint64</span> <span class='op'>=</span> <span class='op'>|</span><span class='ident'>x</span> : <span class='kw-2'>&amp;</span><span class='ident'>u64</span><span class='op'>|</span> {
+  <span class='ident'>x</span> <span class='op'>*</span> <span class='number'>3</span>
+})</pre>
+
+<p>In this case, we have declared a function called <code>f</code>, said that it takes
+as input a <code>uint64</code>, and should output a <code>uint64</code>.
+The type of the input to the function should be the output of the <code>.get()</code>
+call of the relevant value, which will usually be a reference to the rust
+equivalent of the type.
+The output should be a value which <code>.to_value()</code> will convert to a
+correctly typed <code>Value</code>.</p>
+
+<p>Additionally, the type system allows for tuples and lists. Tuple types
+are denoted <code>(t1, t2)</code>, and list types are denoted <code>[t]</code>. Lists and tuples
+will be unpacked through by the <code>func!</code> macro, so a function with a
+<code>[uint64]</code> input would expect to take a <code>Vec&lt;&amp;u64&gt;</code>, and a function taking
+<code>(string, uint64)</code> would expect to take a (&amp;String, &amp;u64).
+For example:</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>func</span><span class='macro'>!</span>(<span class='kw'>let</span> <span class='ident'>replicate</span> : (<span class='ident'>string</span>, <span class='ident'>uint64</span>) <span class='op'>-&gt;</span> [<span class='ident'>string</span>] <span class='op'>=</span>
+  <span class='op'>|</span>(<span class='ident'>s</span>, <span class='ident'>n</span>) : (<span class='kw-2'>&amp;</span><span class='ident'>String</span>, <span class='kw-2'>&amp;</span><span class='ident'>u64</span>)<span class='op'>|</span> {
+    <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>vec</span> : <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>Vec</span>::<span class='ident'>new</span>();
+    <span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='op'>*</span><span class='ident'>n</span> {
+      <span class='ident'>vec</span>.<span class='ident'>push</span>(<span class='ident'>s</span>.<span class='ident'>clone</span>());
+    };
+    <span class='ident'>vec</span>
+  }
+)</pre>
+
+<h2 id='where-clauses' class='section-header'><a href='#where-clauses'>Where Clauses</a></h2>
+<p>Telling Holmes about functions isn&#39;t useful without a way to use them.
+Where clauses are a way to perform a transformation on the data after the
+map, but before the head clause is produced and sent to the database.</p>
+
+<p>Extending the example from earlier, we might want to generate a distances
+for the connection paths we found.</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>holmes_exec</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, {
+  <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Albuquerque&quot;</span>, <span class='number'>1810</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Las Vegas&quot;</span>, <span class='number'>2225</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;Las Vegas&quot;</span>, <span class='string'>&quot;Palo Alto&quot;</span>, <span class='number'>542</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;Rome&quot;</span>, <span class='string'>&quot;Florence&quot;</span>, <span class='number'>173</span>));
+<span class='comment'>//rule!(distance(B, A, N) &lt;= distance(A, B, N));</span>
+  <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>path</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>));
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>path</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N</span>));
+  <span class='macro'>func</span><span class='macro'>!</span>(<span class='kw'>let</span> <span class='ident'>add</span> : (<span class='ident'>uint64</span>, <span class='ident'>uint64</span>) <span class='op'>-&gt;</span> <span class='ident'>uint64</span> <span class='op'>=</span> <span class='op'>|</span>(<span class='ident'>x</span>, <span class='ident'>y</span>) : (<span class='kw-2'>&amp;</span><span class='ident'>u64</span>, <span class='kw-2'>&amp;</span><span class='ident'>u64</span>)<span class='op'>|</span> {
+    <span class='ident'>x</span> <span class='op'>+</span> <span class='ident'>y</span>
+  });
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>path</span>(<span class='ident'>A</span>, <span class='ident'>C</span>, <span class='ident'>NSum</span>) <span class='op'>&lt;=</span> <span class='ident'>path</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N1</span>) <span class='kw-2'>&amp;</span> <span class='ident'>path</span>(<span class='ident'>B</span>, <span class='ident'>C</span>, <span class='ident'>N2</span>), {
+    <span class='kw'>let</span> <span class='ident'>NSum</span> <span class='op'>=</span> {<span class='ident'>add</span>([<span class='ident'>N1</span>], [<span class='ident'>N2</span>])}
+  })
+});</pre>
+
+<p>The astute reader will notice there is something wrong with this example.
+It builds, and it runs, I&#39;m not trying to mess with you while teaching.
+However, the last rule we added (which does the sum of the distances) will
+loop forever if there is any cycle in the <code>distance</code> predicate.
+This is why I commented out the rule flipping the distance direction
+around, as this would cause this example to run infinitely.</p>
+
+<p>Normally in Datalog, we have a termination property - no matter what
+rules or facts you add, the database will always eventually stop growing.
+This proof follows from the inability of a rule firing to introduce a new
+value, which means there are only a finite number of derivable facts. With
+the addition of where clauses, we lose this property, because new values
+can appear, as per the <code>add</code> function above.</p>
+
+<p>However, we also add other kinds of binds to the where clause that
+can help the programmer control this kind of situation.</p>
+
+<p>N.B. the postgres backend doesn&#39;t currently support list persistence, so
+if you wanted to use a list in a predicate, you&#39;d actually need to make a
+custom <code>Path</code> type and value that knew how to store itself, perhaps via
+<code>postgres-array</code></p>
+
+<h3 id='binds' class='section-header'><a href='#binds'>Binds</a></h3>
+<h4 id='variable-binding' class='section-header'><a href='#variable-binding'>Variable binding</a></h4>
+<p>This is as in the inital example. They are written <code>let x = expression</code>,
+and simply bind the expression to the variable.</p>
+
+<h4 id='destructuring' class='section-header'><a href='#destructuring'>Destructuring</a></h4>
+<p>This kind of bind is basically just shorthand to prevent the need for
+functions like <code>access_tuple_field_1</code>, <code>access_tuple_field_2</code>.
+It is written <code>let (x, y, z) = expression</code></p>
+
+<h4 id='value-binding' class='section-header'><a href='#value-binding'>Value binding</a></h4>
+<p>This is the first unusual kind of binding, and the one we can use to fix
+up the previous example. Value binds are written <code>let (expr) = expr2</code>.
+If <code>expr</code> and <code>expr2</code> evaluate to the same value, this expression has no
+effect. However, if <code>expr</code> and <code>expr2</code> differ, the variable assignment
+currently generated by the where clause will stop.</p>
+
+<p>To fix the previous example, we can track the path we&#39;ve gone through thus
+far, and store it in an additional slot in the <code>path</code> predicate.
+Then, in the where clause for adding a new step to the path, we can check
+for membership in the existing path. If it is present, we can use a value
+binding to stop pursuing this avenue. If it is not present, then we can
+proceed as before.</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>try</span><span class='macro'>!</span>(<span class='macro'>holmes_exec</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, {
+  <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>uint64</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Albuquerque&quot;</span>, <span class='number'>1810</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;New York&quot;</span>, <span class='string'>&quot;Las Vegas&quot;</span>, <span class='number'>2225</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;Las Vegas&quot;</span>, <span class='string'>&quot;Palo Alto&quot;</span>, <span class='number'>542</span>));
+  <span class='macro'>fact</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='string'>&quot;Rome&quot;</span>, <span class='string'>&quot;Florence&quot;</span>, <span class='number'>173</span>));
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>distance</span>(<span class='ident'>B</span>, <span class='ident'>A</span>, <span class='ident'>N</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N</span>));
+  <span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>path</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, [<span class='ident'>string</span>], <span class='ident'>uint64</span>));
+  <span class='macro'>func</span><span class='macro'>!</span>(<span class='kw'>let</span> <span class='ident'>two_vec</span> : (<span class='ident'>string</span>, <span class='ident'>string</span>) <span class='op'>-&gt;</span> [<span class='ident'>string</span>] <span class='op'>=</span>
+    <span class='op'>|</span>(<span class='ident'>x</span>, <span class='ident'>y</span>) : (<span class='kw-2'>&amp;</span><span class='ident'>String</span>, <span class='kw-2'>&amp;</span><span class='ident'>String</span>)<span class='op'>|</span> { <span class='macro'>vec</span><span class='macro'>!</span>[<span class='ident'>x</span>.<span class='ident'>clone</span>(), <span class='ident'>y</span>.<span class='ident'>clone</span>()] });
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>path</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>steps</span>, <span class='ident'>N</span>) <span class='op'>&lt;=</span> <span class='ident'>distance</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>N</span>), {
+    <span class='kw'>let</span> <span class='ident'>steps</span> <span class='op'>=</span> {<span class='ident'>two_vec</span>([<span class='ident'>A</span>], [<span class='ident'>B</span>])}});
+  <span class='macro'>func</span><span class='macro'>!</span>(<span class='kw'>let</span> <span class='ident'>add</span> : (<span class='ident'>uint64</span>, <span class='ident'>uint64</span>) <span class='op'>-&gt;</span> <span class='ident'>uint64</span> <span class='op'>=</span> <span class='op'>|</span>(<span class='ident'>x</span>, <span class='ident'>y</span>) : (<span class='kw-2'>&amp;</span><span class='ident'>u64</span>, <span class='kw-2'>&amp;</span><span class='ident'>u64</span>)<span class='op'>|</span> {
+    <span class='ident'>x</span> <span class='op'>+</span> <span class='ident'>y</span>
+  });
+  <span class='macro'>func</span><span class='macro'>!</span>(<span class='kw'>let</span> <span class='ident'>append</span> : (<span class='ident'>string</span>, [<span class='ident'>string</span>]) <span class='op'>-&gt;</span> [<span class='ident'>string</span>] <span class='op'>=</span>
+    <span class='op'>|</span>(<span class='ident'>x</span>, <span class='ident'>y</span>) : (<span class='kw-2'>&amp;</span><span class='ident'>String</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>String</span><span class='op'>&gt;</span>)<span class='op'>|</span> {
+      <span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>out</span> : <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='ident'>String</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>y</span>.<span class='ident'>into_iter</span>().<span class='ident'>cloned</span>().<span class='ident'>collect</span>();
+      <span class='ident'>out</span>.<span class='ident'>push</span>(<span class='ident'>x</span>.<span class='ident'>clone</span>());
+      <span class='ident'>out</span>
+    });
+  <span class='macro'>func</span><span class='macro'>!</span>(<span class='kw'>let</span> <span class='ident'>mem</span> : (<span class='ident'>string</span>, [<span class='ident'>string</span>]) <span class='op'>-&gt;</span> <span class='ident'>bool</span> <span class='op'>=</span>
+    <span class='op'>|</span>(<span class='ident'>needle</span>, <span class='ident'>haystack</span>) : (<span class='kw-2'>&amp;</span><span class='ident'>String</span>, <span class='ident'>Vec</span><span class='op'>&lt;</span><span class='kw-2'>&amp;</span><span class='ident'>String</span><span class='op'>&gt;</span>)<span class='op'>|</span> {
+      <span class='ident'>haystack</span>.<span class='ident'>contains</span>(<span class='kw-2'>&amp;</span><span class='ident'>needle</span>)
+    });
+  <span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>path</span>(<span class='ident'>A</span>, <span class='ident'>C</span>, <span class='ident'>path2</span>, <span class='ident'>NSum</span>) <span class='op'>&lt;=</span> <span class='ident'>path</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>path</span>, <span class='ident'>N1</span>)
+                                 <span class='kw-2'>&amp;</span> <span class='ident'>distance</span>(<span class='ident'>B</span>, <span class='ident'>C</span>, <span class='ident'>N2</span>), {
+    <span class='comment'>// If we&#39;ve already walked over C, we aren&#39;t interested</span>
+    <span class='kw'>let</span> (<span class='boolval'>false</span>) <span class='op'>=</span> {<span class='ident'>mem</span>([<span class='ident'>C</span>], [<span class='ident'>path</span>])};
+    <span class='kw'>let</span> <span class='ident'>path2</span> <span class='op'>=</span> {<span class='ident'>append</span>([<span class='ident'>C</span>], [<span class='ident'>path</span>])};
+    <span class='kw'>let</span> <span class='ident'>NSum</span> <span class='op'>=</span> {<span class='ident'>add</span>([<span class='ident'>N1</span>], [<span class='ident'>N2</span>])}
+  })
+}));
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='macro'>query</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, <span class='ident'>path</span>((<span class='string'>&quot;New York&quot;</span>), <span class='ident'>dest</span>, [_], <span class='ident'>dist</span>)).<span class='ident'>unwrap</span>();
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>res</span>,
+           <span class='macro'>vec</span><span class='macro'>!</span>[
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Albuquerque&quot;</span>.<span class='ident'>to_value</span>(), <span class='number'>1810</span>.<span class='ident'>to_value</span>()],
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Las Vegas&quot;</span>.<span class='ident'>to_value</span>(), <span class='number'>2225</span>.<span class='ident'>to_value</span>()],
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Palo Alto&quot;</span>.<span class='ident'>to_value</span>(), <span class='number'>2767</span>.<span class='ident'>to_value</span>()],
+               ]);</pre>
+
+<h4 id='iteration' class='section-header'><a href='#iteration'>Iteration</a></h4>
+<p>The last kind of bind is the iterative bind. This works similarly to the
+List monad in Haskell if you are familiar with it, but you don&#39;t need
+to know anything about that to proceed.</p>
+
+<p>An iterative bind is written <code>let [x] = expr</code>, where the expression should
+evaluate to a list-typed value. When this bind is run, the set of possible
+answers splits into a different instance for each value in the list. So, if
+we had</p>
+
+<pre><code class="language-c">rule!(q(x, y) &lt;= p(y), {
+  let [x] = f(y)
+})
+</code></pre>
+
+<p>it would first find all <code>y</code> such that <code>p(y)</code>, and then for each of them,
+it would apply <code>f</code> and get a list. Imagine that <code>f</code> just returns a list of
+<code>y</code> and <code>y + 1</code>, and that <code>p</code> is only populated with <code>p(1)</code> and <code>p(2)</code>.</p>
+
+<p>The match would produce the possible assignment sets <code>y = 1</code> and <code>y = 2</code>.
+After running the where clause, the first one would become <code>x = 1, y = 1</code>,
+<code>x = 2, y = 1</code>, and the secould would become <code>x = 2, y = 2</code>, <code>x = 3, y = 2</code>
+. This ends with the database containing <code>q(1, 1), q(2, 1), q(2, 2), q(3, 2)</code>.</p>
+
+<p>That example is somewhat abstract, but hopefully it illustrates the
+multiplicative effect of the iteration bind. The iteration bind can also
+be used to terminate early a rule, similar to the value bind, by iterating
+over an empty list. If an iteration bind is used multiple times in a where
+clause, it will operate on each of the new answer sets from the previous
+iteration bind individually.</p>
+
+<p>As a more concrete example, say we wanted to define a predicate
+which contained all sities that might be used on a path from New York to
+Palo Alto. We can take the example from earlier and add:</p>
+<pre class='rust rust-example-rendered'>
+<span class='macro'>predicate</span><span class='macro'>!</span>(<span class='ident'>on_the_road</span>(<span class='ident'>string</span>, <span class='ident'>string</span>, <span class='ident'>string</span>));
+<span class='macro'>rule</span><span class='macro'>!</span>(<span class='ident'>on_the_road</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>stop</span>) <span class='op'>&lt;=</span> <span class='ident'>path</span>(<span class='ident'>A</span>, <span class='ident'>B</span>, <span class='ident'>path</span>, [_]), {
+  <span class='kw'>let</span> [<span class='ident'>stop</span>] <span class='op'>=</span> [<span class='ident'>path</span>]
+})
+<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span> <span class='op'>=</span> <span class='macro'>query</span><span class='macro'>!</span>(<span class='ident'>holmes</span>, <span class='ident'>on_the_road</span>((<span class='string'>&quot;New York&quot;</span>), (<span class='string'>&quot;Palo Alto&quot;</span>),
+                                         <span class='ident'>stop</span>)).<span class='ident'>unwrap</span>();
+
+<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>res</span>,
+           <span class='macro'>vec</span><span class='macro'>!</span>[
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Las Vegas&quot;</span>.<span class='ident'>to_value</span>()],
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;New York&quot;</span>.<span class='ident'>to_value</span>()],
+                <span class='macro'>vec</span><span class='macro'>!</span>[<span class='string'>&quot;Palo Alto&quot;</span>.<span class='ident'>to_value</span>()],
+               ]);</pre>
+
+<h1 id='caveats' class='section-header'><a href='#caveats'>Caveats</a></h1>
+<ul>
+<li>If you use custom types, you cannot currently reconnect to the database.
+This will be fixed in the near future.</li>
+<li>Lists cannot be persisted in the postgres backend. If you must have a
+list persisted, create a custom ListOfExtendedType type and Value.
+Note that these will not be able to be used with an iteration bind,
+so if you must do that, you will need to convert between them with a
+function first.
+You may find postgres-array useful for writing your type.</li>
+</ul>
+</div><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='edsl/index.html'
+                               title='holmes::edsl'>edsl</a></td>
+                        <td class='docblock short'>
+                             <p>Holmes EDSL</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='engine/index.html'
+                               title='holmes::engine'>engine</a></td>
+                        <td class='docblock short'>
+                             <p>Holmes/Datalog Execution Engine</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='fact_db/index.html'
+                               title='holmes::fact_db'>fact_db</a></td>
+                        <td class='docblock short'>
+                             <p>This module defines the interface which a fact database must present to
+be used as a backend by the Holmes engine.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='mem_db/index.html'
+                               title='holmes::mem_db'>mem_db</a></td>
+                        <td class='docblock short'>
+                             <p>This is a memory mock for the fact database interface.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='mod' href='pg/index.html'
+                               title='holmes::pg'>pg</a></td>
+                        <td class='docblock short'>
+                             <p>Postgres-based Fact Database</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='macros' class='section-header'><a href="#macros">Macros</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.bind_match!.html'
+                               title='holmes::bind_match!'>bind_match!</a></td>
+                        <td class='docblock short'>
+                             <p>Constructs a bind match outer object.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.clause_match!.html'
+                               title='holmes::clause_match!'>clause_match!</a></td>
+                        <td class='docblock short'>
+                             <p>Generates a <code>MatchExpr</code> from a representation</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.fact!.html'
+                               title='holmes::fact!'>fact!</a></td>
+                        <td class='docblock short'>
+                             <p>Stores a fact with the <code>Holmes</code> context.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.func!.html'
+                               title='holmes::func!'>func!</a></td>
+                        <td class='docblock short'>
+                             <p>Registers a native rust function with the <code>Holmes</code> object for use in rules.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.hexpr!.html'
+                               title='holmes::hexpr!'>hexpr!</a></td>
+                        <td class='docblock short'>
+                             <p>Generates an expression structure</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.holmes_exec!.html'
+                               title='holmes::holmes_exec!'>holmes_exec!</a></td>
+                        <td class='docblock short'>
+                             <p>Shorthand notation for performing many actions with the same holmes context
+Analogous to a weaker version of the <code>Reader</code> monad which cannot return
+values.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.htype!.html'
+                               title='holmes::htype!'>htype!</a></td>
+                        <td class='docblock short'>
+                             <p>Converts an EDSL type specification into a Holmes type object
+Takes the name of a variable containing a holmes object as the first
+parameter, and a type description as the second.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.predicate!.html'
+                               title='holmes::predicate!'>predicate!</a></td>
+                        <td class='docblock short'>
+                             <p>Registers a predicate with the <code>Holmes</code> context.</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.query!.html'
+                               title='holmes::query!'>query!</a></td>
+                        <td class='docblock short'>
+                             <p>Runs a datalog query against the <code>Holmes</code> context</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.rule!.html'
+                               title='holmes::rule!'>rule!</a></td>
+                        <td class='docblock short'>
+                             <p>Adds a Holmes rule to the system</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.typed_unpack!.html'
+                               title='holmes::typed_unpack!'>typed_unpack!</a></td>
+                        <td class='docblock short'>
+                             <p>Given a value and a type it is believed to be, unpack it to the greatest
+extent possible (e.g. unpack through tupling and lists)</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.typet_boiler!.html'
+                               title='holmes::typet_boiler!'>typet_boiler!</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.typet_inner!.html'
+                               title='holmes::typet_inner!'>typet_inner!</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.typet_inner_eq!.html'
+                               title='holmes::typet_inner_eq!'>typet_inner_eq!</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='macro' href='macro.valuet_boiler!.html'
+                               title='holmes::valuet_boiler!'>valuet_boiler!</a></td>
+                        <td class='docblock short'>
+                             
+                        </td>
+                    </tr>
+                </table><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='struct' href='struct.Holmes.html'
+                               title='holmes::Holmes'>Holmes</a></td>
+                        <td class='docblock short'>
+                             <p>Encapsulates the user-level interface to a holmes database</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='enums' class='section-header'><a href="#enums">Enums</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.DB.html'
+                               title='holmes::DB'>DB</a></td>
+                        <td class='docblock short'>
+                             <p>Defines the database connection parameters</p>
+
+                        </td>
+                    </tr>
+                
+                    <tr class=' module-item'>
+                        <td><a class='enum' href='enum.Error.html'
+                               title='holmes::Error'>Error</a></td>
+                        <td class='docblock short'>
+                             <p>Ways that a <code>Holmes</code> operation might go wrong</p>
+
+                        </td>
+                    </tr>
+                </table><h2 id='types' class='section-header'><a href="#types">Type Definitions</a></h2>
+<table>
+                    <tr class=' module-item'>
+                        <td><a class='type' href='type.Result.html'
+                               title='holmes::Result'>Result</a></td>
+                        <td class='docblock short'>
+                             <p><code>Result</code> is a shorthand type for the standard <code>Result</code> specialized to our
+`Error type.</p>
+
+                        </td>
+                    </tr>
+                </table></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "holmes";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../jquery.js"></script>
+    <script src="../main.js"></script>
+    
+    <script defer src="../search-index.js"></script>
+</body>
+</html>

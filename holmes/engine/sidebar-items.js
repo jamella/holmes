@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","`engine::Error` describes ways that an attempt to input or run a Holmes program could go wrong"]],"mod":[["types","Holmes Language Types"]],"struct":[["Engine","The `Engine` type contains the context necessary to run a Holmes program"]]});

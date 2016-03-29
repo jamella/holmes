@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["Error","The `Error` type for representing things going wrong in the database layer."]]});

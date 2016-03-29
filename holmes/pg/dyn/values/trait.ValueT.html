@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `ValueT` trait in crate `holmes`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, ValueT">
+
+    <title>holmes::pg::dyn::values::ValueT - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../../../rustdoc.css">
+    <link rel="stylesheet" type="text/css" href="../../../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        
+        <p class='location'><a href='../../../index.html'>holmes</a>::<wbr><a href='../../index.html'>pg</a>::<wbr><a href='../index.html'>dyn</a>::<wbr><a href='index.html'>values</a></p><script>window.sidebarCurrent = {name: 'ValueT', ty: 'trait', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </nav>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content trait">
+<h1 class='fqn'><span class='in-band'>Trait <a href='../../../index.html'>holmes</a>::<wbr><a href='../../index.html'>pg</a>::<wbr><a href='../index.html'>dyn</a>::<wbr><a href='index.html'>values</a>::<wbr><a class='trait' href=''>ValueT</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-404' class='srclink' href='../../../../src/holmes/pg/dyn.rs.html#336-365' title='goto source code'>[src]</a></span></h1>
+<pre class='rust trait'>pub trait ValueT: <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html' title='core::marker::Sync'>Sync</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/marker/trait.Send.html' title='core::marker::Send'>Send</a> + <a class='trait' href='../../../../holmes/pg/dyn/trait.HashTO.html' title='holmes::pg::dyn::HashTO'>HashTO</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/fmt/trait.Debug.html' title='core::fmt::Debug'>Debug</a> + <a class='trait' href='https://doc.rust-lang.org/nightly/core/any/trait.Any.html' title='core::any::Any'>Any</a> {
+    fn <a href='#tymethod.type_' class='fnname'>type_</a>(&amp;self) -&gt; <a class='type' href='../../../../holmes/pg/dyn/type.Type.html' title='holmes::pg::dyn::Type'>Type</a>;
+    fn <a href='#tymethod.get' class='fnname'>get</a>(&amp;self) -&gt; &amp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/any/trait.Any.html' title='core::any::Any'>Any</a>;
+    fn <a href='#tymethod.to_sql' class='fnname'>to_sql</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;&amp;<a class='trait' href='../../../../postgres/types/trait.ToSql.html' title='postgres::types::ToSql'>ToSql</a>&gt;;
+    fn <a href='#tymethod.inner' class='fnname'>inner</a>(&amp;self) -&gt; &amp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/any/trait.Any.html' title='core::any::Any'>Any</a>;
+    fn <a href='#tymethod.inner_eq' class='fnname'>inner_eq</a>(&amp;self, other: &amp;<a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a>;
+    fn <a href='#tymethod.inner_ord' class='fnname'>inner_ord</a>(&amp;self, &amp;<a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a>&gt;;
+}</pre><div class='docblock'><p>This trait defines the interface any value must implement in order to be
+used in the Holmes language.</p>
+</div>
+            <h2 id='required-methods'>Required Methods</h2>
+            <div class='methods'>
+        <h3 id='tymethod.type_' class='method stab '><code>fn <a href='#tymethod.type_' class='fnname'>type_</a>(&amp;self) -&gt; <a class='type' href='../../../../holmes/pg/dyn/type.Type.html' title='holmes::pg::dyn::Type'>Type</a></code></h3><div class='docblock'><p>Returns the type of the value
+This is needed if to do type checking, or tuple values</p>
+</div><h3 id='tymethod.get' class='method stab '><code>fn <a href='#tymethod.get' class='fnname'>get</a>(&amp;self) -&gt; &amp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/any/trait.Any.html' title='core::any::Any'>Any</a></code></h3><div class='docblock'><p>Get a rust dynamic type version of the value contained.</p>
+
+<p>Since Holmes is a typed language, the user of this function should
+know what to expect and be able to cast from Any into it.</p>
+</div><h3 id='tymethod.to_sql' class='method stab '><code>fn <a href='#tymethod.to_sql' class='fnname'>to_sql</a>(&amp;self) -&gt; <a class='struct' href='https://doc.rust-lang.org/nightly/collections/vec/struct.Vec.html' title='collections::vec::Vec'>Vec</a>&lt;&amp;<a class='trait' href='../../../../postgres/types/trait.ToSql.html' title='postgres::types::ToSql'>ToSql</a>&gt;</code></h3><div class='docblock'><p>Converts the value into a list of ToSql trait objects to allow for
+insertion into the database via a prepared query</p>
+</div><h3 id='tymethod.inner' class='method stab '><code>fn <a href='#tymethod.inner' class='fnname'>inner</a>(&amp;self) -&gt; &amp;<a class='trait' href='https://doc.rust-lang.org/nightly/core/any/trait.Any.html' title='core::any::Any'>Any</a></code></h3><div class='docblock'><p>Returns a dynamic representation of the trait object.</p>
+
+<p>Trait objects cannot be cast to other trait objects, even if they
+implement the other trait necessarily. In order to access functions
+under the <code>Any</code> trait, I have the non-trait-object implementation
+provide access to its &amp;Any representation.</p>
+</div><h3 id='tymethod.inner_eq' class='method stab '><code>fn <a href='#tymethod.inner_eq' class='fnname'>inner_eq</a>(&amp;self, other: &amp;<a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h3><div class='docblock'><p>Check equality</p>
+
+<p>Similar to <code>inner</code>, <code>inner_eq</code> exports a <code>PartialEq</code> instance from
+the underlying type.</p>
+</div><h3 id='tymethod.inner_ord' class='method stab '><code>fn <a href='#tymethod.inner_ord' class='fnname'>inner_ord</a>(&amp;self, &amp;<a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a>&gt;</code></h3><div class='docblock'><p>Check order</p>
+
+<p>Similar to <code>inner</code>, <code>inner_ord</code> exports an <code>Ord</code> instance form
+the underlying type</p>
+</div></div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html' title='core::hash::Hash'>Hash</a> for <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a></code></h3><div class='impl-items'><h4 id='method.hash' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html#method.hash' class='fnname'>hash</a>&lt;H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hasher.html' title='core::hash::Hasher'>Hasher</a>&gt;(&amp;self, hasher: &amp;mut H)</code></h4>
+<h4 id='method.hash_slice' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/hash/trait.Hash.html#method.hash_slice' class='fnname'>hash_slice</a>&lt;H&gt;(data: <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.slice.html'>&amp;[Self]</a>, state: &amp;mut H) <span class='where'>where H: <a class='trait' href='https://doc.rust-lang.org/nightly/core/hash/trait.Hasher.html' title='core::hash::Hasher'>Hasher</a></span></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.Eq.html' title='core::cmp::Eq'>Eq</a> for <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a></code></h3><div class='impl-items'></div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html' title='core::cmp::PartialEq'>PartialEq</a> for <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a></code></h3><div class='impl-items'><h4 id='method.eq' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.eq' class='fnname'>eq</a>(&amp;self, other: &amp;<a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a>) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ne' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialEq.html#method.ne' class='fnname'>ne</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html' title='core::cmp::PartialOrd'>PartialOrd</a> for <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a></code></h3><div class='impl-items'><h4 id='method.partial_cmp' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.partial_cmp' class='fnname'>partial_cmp</a>(&amp;self, other: &amp;<a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a>) -&gt; <a class='enum' href='https://doc.rust-lang.org/nightly/core/option/enum.Option.html' title='core::option::Option'>Option</a>&lt;<a class='enum' href='https://doc.rust-lang.org/nightly/core/cmp/enum.Ordering.html' title='core::cmp::Ordering'>Ordering</a>&gt;</code></h4>
+<h4 id='method.lt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.lt' class='fnname'>lt</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.le' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.le' class='fnname'>le</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.gt' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.gt' class='fnname'>gt</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+<h4 id='method.ge' class='method'><code>fn <a href='https://doc.rust-lang.org/nightly/core/cmp/trait.PartialOrd.html#method.ge' class='fnname'>ge</a>(&amp;self, other: &amp;Rhs) -&gt; <a class='primitive' href='https://doc.rust-lang.org/nightly/std/primitive.bool.html'>bool</a></code></h4>
+</div>
+        <h2 id='implementors'>Implementors</h2>
+        <ul class='item-list' id='implementors-list'>
+    <li><code>impl <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a> for <a class='struct' href='../../../../holmes/pg/dyn/values/struct.List.html' title='holmes::pg::dyn::values::List'>List</a></code></li>
+<li><code>impl <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a> for <a class='struct' href='../../../../holmes/pg/dyn/values/struct.Tuple.html' title='holmes::pg::dyn::values::Tuple'>Tuple</a></code></li>
+<li><code>impl <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a> for <a class='struct' href='../../../../holmes/pg/dyn/values/struct.Bool.html' title='holmes::pg::dyn::values::Bool'>Bool</a></code></li>
+<li><code>impl <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a> for <a class='struct' href='../../../../holmes/pg/dyn/values/struct.UInt64.html' title='holmes::pg::dyn::values::UInt64'>UInt64</a></code></li>
+<li><code>impl <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a> for <a class='struct' href='../../../../holmes/pg/dyn/values/struct.String.html' title='holmes::pg::dyn::values::String'>String</a></code></li>
+<li><code>impl <a class='trait' href='../../../../holmes/pg/dyn/values/trait.ValueT.html' title='holmes::pg::dyn::values::ValueT'>ValueT</a> for <a class='struct' href='../../../../holmes/pg/dyn/values/struct.Bytes.html' title='holmes::pg::dyn::values::Bytes'>Bytes</a></code></li>
+</ul><script type="text/javascript" async
+                              src="../../../../implementors/holmes/pg/dyn/values/trait.ValueT.js">
+                      </script></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../../../../";
+        window.currentCrate = "holmes";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../../../jquery.js"></script>
+    <script src="../../../../main.js"></script>
+    
+    <script defer src="../../../../search-index.js"></script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["MemDB","MemDB is an in-memory mock up of the fact database interface."]]});
